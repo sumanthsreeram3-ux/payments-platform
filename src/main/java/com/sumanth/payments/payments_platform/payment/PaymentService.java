@@ -4,6 +4,7 @@ import com.sumanth.payments.payments_platform.common.ConflictException;
 import com.sumanth.payments.payments_platform.common.NotFoundException;
 import com.sumanth.payments.payments_platform.common.UnprocessableException;
 import com.sumanth.payments.payments_platform.customer.CustomerRepository;
+import com.sumanth.payments.payments_platform.events.OutboxService;
 import com.sumanth.payments.payments_platform.ledger.Direction;
 import com.sumanth.payments.payments_platform.ledger.LedgerService;
 import com.sumanth.payments.payments_platform.ledger.LedgerService.EntryRequest;
@@ -33,14 +34,17 @@ public class PaymentService {
     private final CustomerRepository customers;
     private final SubscriptionRepository subscriptions;
     private final LedgerService ledger;
+    private final OutboxService outbox;
 
     public PaymentService(JdbcTemplate jdbc, PaymentRepository payments, CustomerRepository customers,
-                          SubscriptionRepository subscriptions, LedgerService ledger) {
+                          SubscriptionRepository subscriptions, LedgerService ledger,
+                          OutboxService outbox) {
         this.jdbc = jdbc;
         this.payments = payments;
         this.customers = customers;
         this.subscriptions = subscriptions;
         this.ledger = ledger;
+        this.outbox = outbox;
     }
 
     @Transactional
@@ -73,6 +77,10 @@ public class PaymentService {
         Payment payment = payments.saveAndFlush(new Payment(cmd.customerId(), cmd.subscriptionId(),
                 cmd.amountMinor(), cmd.currency(), status, cmd.description(), ledgerTxId));
 
+        // Same transaction as the payment and ledger entries: all commit together or none do.
+        outbox.add("payment", payment.getId(), "payment." + status.name().toLowerCase(),
+                paymentPayload(payment));
+
         jdbc.update("UPDATE idempotency_keys SET payment_id = ?, status_code = ? WHERE key = ?",
                 payment.getId(), 201, idempotencyKey);
         return new ChargeResult(payment, false);
@@ -87,6 +95,13 @@ public class PaymentService {
         UUID paymentId = (UUID) row.get("payment_id");
         if (paymentId == null) throw new ConflictException("Original request is still in progress");
         return new ChargeResult(payments.findById(paymentId).orElseThrow(), true);
+    }
+
+    private static String paymentPayload(Payment p) {
+        // Only UUIDs, numbers and enum names go in, so no JSON escaping is needed.
+        return String.format(
+                "{\"paymentId\":\"%s\",\"customerId\":\"%s\",\"amountMinor\":%d,\"currency\":\"%s\",\"status\":\"%s\"}",
+                p.getId(), p.getCustomerId(), p.getAmountMinor(), p.getCurrency(), p.getStatus());
     }
 
     private static String sha256(String input) {
