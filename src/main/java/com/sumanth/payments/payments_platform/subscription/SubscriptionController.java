@@ -13,15 +13,17 @@ import java.util.UUID;
 @RequestMapping("/subscriptions")
 public class SubscriptionController {
 
-    public record CreateSubscriptionRequest(@NotNull UUID customerId, @NotNull UUID planId,
-                                            boolean trial) {}
+    public record CreateSubscriptionRequest(@NotNull UUID customerId,
+                                            @NotNull UUID planId,
+                                            Boolean trial) {}
 
     public record SubscriptionResponse(UUID id, UUID customerId, UUID planId,
                                        SubscriptionStatus status, Instant currentPeriodStart,
                                        Instant currentPeriodEnd, Instant canceledAt) {
         static SubscriptionResponse from(Subscription s) {
-            return new SubscriptionResponse(s.getId(), s.getCustomerId(), s.getPlanId(), s.getStatus(),
-                    s.getCurrentPeriodStart(), s.getCurrentPeriodEnd(), s.getCanceledAt());
+            return new SubscriptionResponse(s.getId(), s.getCustomerId(), s.getPlanId(),
+                    s.getStatus(), s.getCurrentPeriodStart(), s.getCurrentPeriodEnd(),
+                    s.getCanceledAt());
         }
     }
 
@@ -32,7 +34,8 @@ public class SubscriptionController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SubscriptionResponse create(@Valid @RequestBody CreateSubscriptionRequest req) {
-        return SubscriptionResponse.from(service.create(req.customerId(), req.planId(), req.trial()));
+        return SubscriptionResponse.from(
+                service.create(req.customerId(), req.planId(), Boolean.TRUE.equals(req.trial())));
     }
 
     @GetMapping("/{id}")
