@@ -16,11 +16,19 @@ spring:
     enabled: true
   kafka:
     bootstrap-servers: localhost:9092
-    producer:
-      acks: all
-      properties:
-        enable.idempotence: true
-        max.block.ms: 5000
-    consumer:
-      group-id: payments-platform
-      auto-offset-reset: earliest
+
+billing:
+  scheduler-enabled: true
+  poll-interval-ms: 5000
+  max-attempts: 3
+  retry-base-delay-seconds: 10    # demo value; production would be hours or days
+  dev-endpoints: true             # demo switches; turn off outside local development
+
+logging:
+  level:
+    org.apache.kafka.clients.NetworkClient: ERROR
+    org.apache.kafka.clients.Metadata: WARN
+    org.apache.kafka.clients.FetchSessionHandler: WARN
+    org.apache.kafka.common.config.AbstractConfig: WARN
+    org.apache.kafka.clients.consumer.internals: WARN
+    org.springframework.kafka.support.LoggingProducerListener: OFF

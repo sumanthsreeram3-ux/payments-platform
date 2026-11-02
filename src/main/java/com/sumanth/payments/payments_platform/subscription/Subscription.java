@@ -4,7 +4,6 @@ import com.sumanth.payments.payments_platform.common.ConflictException;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +31,12 @@ public class Subscription {
     @Column(name = "canceled_at")
     private Instant canceledAt;
 
+    @Column(name = "billing_attempts", nullable = false)
+    private int billingAttempts;
+
+    @Column(name = "next_billing_attempt_at")
+    private Instant nextBillingAttemptAt;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -58,9 +63,29 @@ public class Subscription {
         }
     }
 
-    public void advancePeriod(Instant newEnd) {
+    /** A renewal charge succeeded: recover if past due, move to the next period, reset retries. */
+    public void markBilled(Instant newPeriodEnd) {
+        if (status == SubscriptionStatus.PAST_DUE) {
+            transitionTo(SubscriptionStatus.ACTIVE);
+        }
         this.currentPeriodStart = this.currentPeriodEnd;
-        this.currentPeriodEnd = newEnd;
+        this.currentPeriodEnd = newPeriodEnd;
+        this.billingAttempts = 0;
+        this.nextBillingAttemptAt = null;
+    }
+
+    /** A renewal charge failed: schedule a retry, or cancel after maxAttempts. */
+    public void markBillingFailed(int maxAttempts, Instant nextAttemptAt) {
+        this.billingAttempts++;
+        if (billingAttempts >= maxAttempts) {
+            transitionTo(SubscriptionStatus.CANCELED);
+            this.nextBillingAttemptAt = null;
+        } else {
+            if (status == SubscriptionStatus.ACTIVE) {
+                transitionTo(SubscriptionStatus.PAST_DUE);
+            }
+            this.nextBillingAttemptAt = nextAttemptAt;
+        }
     }
 
     public UUID getId() { return id; }
@@ -70,5 +95,7 @@ public class Subscription {
     public Instant getCurrentPeriodStart() { return currentPeriodStart; }
     public Instant getCurrentPeriodEnd() { return currentPeriodEnd; }
     public Instant getCanceledAt() { return canceledAt; }
+    public int getBillingAttempts() { return billingAttempts; }
+    public Instant getNextBillingAttemptAt() { return nextBillingAttemptAt; }
     public Instant getCreatedAt() { return createdAt; }
 }
