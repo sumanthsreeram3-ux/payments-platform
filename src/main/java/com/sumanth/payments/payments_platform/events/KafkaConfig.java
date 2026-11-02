@@ -19,10 +19,12 @@ import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@ConditionalOnProperty(name = "events.kafka-enabled", havingValue = "true", matchIfMissing = true)
 @Configuration
 @EnableScheduling
 @EnableKafka

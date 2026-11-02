@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.nio.charset.StandardCharsets;
 
+@ConditionalOnProperty(name = "events.kafka-enabled", havingValue = "true", matchIfMissing = true)
 @Component
 public class PaymentEventLogger {
 
