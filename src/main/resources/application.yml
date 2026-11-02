@@ -22,13 +22,19 @@ billing:
   poll-interval-ms: 5000
   max-attempts: 3
   retry-base-delay-seconds: 10    # demo value; production would be hours or days
-  dev-endpoints: true             # demo switches; turn off outside local development
+  dev-endpoints: true             # demo switches and the webhook sink; turn off outside local development
+
+webhooks:
+  scheduler-enabled: true
+  poll-interval-ms: 2000
+  max-attempts: 6
+  retry-base-delay-seconds: 5     # retries after 5s, 10s, 20s, 40s, 80s
 
 logging:
   level:
+    org.apache.kafka.common.config.AbstractConfig: WARN
     org.apache.kafka.clients.NetworkClient: ERROR
     org.apache.kafka.clients.Metadata: WARN
     org.apache.kafka.clients.FetchSessionHandler: WARN
-    org.apache.kafka.common.config.AbstractConfig: WARN
     org.apache.kafka.clients.consumer.internals: WARN
     org.springframework.kafka.support.LoggingProducerListener: OFF

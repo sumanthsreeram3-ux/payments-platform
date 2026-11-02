@@ -21,6 +21,7 @@ import java.util.UUID;
                 "spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver",
                 "events.kafka-enabled=false",
                 "billing.scheduler-enabled=false",
+                "webhooks.scheduler-enabled=false",
                 "billing.dev-endpoints=false"
         })
 public abstract class AbstractIntegrationTest {

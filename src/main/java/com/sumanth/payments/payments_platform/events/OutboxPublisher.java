@@ -52,6 +52,8 @@ public class OutboxPublisher {
             try {
                 ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, key, payload);
                 record.headers().add("event_type", eventType.getBytes(StandardCharsets.UTF_8));
+                record.headers().add("event_type", eventType.getBytes(StandardCharsets.UTF_8));
+                record.headers().add("event_id", id.toString().getBytes(StandardCharsets.UTF_8));  
                 kafka.send(record).get(10, TimeUnit.SECONDS);
                 jdbc.update("UPDATE outbox_events SET published_at = now() WHERE id = ?", id);
             } catch (Exception e) {
