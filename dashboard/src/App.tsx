@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { get, post } from './api'
 import type { CustomerRow, DeliveryRow, PaymentRow, PlanRow, SubscriptionRow, Summary } from './api'
 import './App.css'
+import AskPanel from './AskPanel'
 
 const money = (minor: number, currency = 'INR') =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(minor / 100)
@@ -224,6 +225,8 @@ export default function App() {
         {notice && <div className={`notice ${notice.kind}`}>{notice.text}</div>}
       </section>
 
+      <AskPanel />
+      
       <div className="grid">
         <section className="panel">
           <h2>Payments</h2>

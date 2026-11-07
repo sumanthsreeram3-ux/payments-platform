@@ -40,3 +40,12 @@ td { padding:7px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
 .badge.succeeded, .badge.delivered, .badge.active { color:var(--good); }
 .badge.failed, .badge.canceled { color:var(--bad); }
 .badge.pending, .badge.past_due, .badge.trialing { color:var(--warn); }
+.ask-row { display:flex; gap:8px; margin-bottom:10px; }
+.ask-input { flex:1; min-width:0; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+button.chip { padding:3px 10px; font-size:12px; font-weight:500; background:transparent; color:var(--brand); border-color:var(--line); border-radius:999px; }
+.ask-answer { font-size:15px; font-weight:600; margin:8px 0 2px; }
+.ask-meta { color:var(--muted); font-size:12px; margin:0 0 8px; }
+details { margin:8px 0; }
+summary { cursor:pointer; color:var(--muted); font-size:12px; }
+pre { background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:10px; overflow-x:auto; font-size:12px; }

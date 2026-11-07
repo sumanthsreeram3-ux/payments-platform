@@ -24,6 +24,13 @@ billing:
   retry-base-delay-seconds: 10    # demo value; production would be hours or days
   dev-endpoints: true             # demo switches and the webhook sink; turn off outside local development
 
+assistant:
+  provider: stub                  # stub | anthropic
+  model: claude-sonnet-5-5        # used only by the anthropic provider
+  max-requests-per-minute: 30
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+    
 webhooks:
   scheduler-enabled: true
   poll-interval-ms: 2000
