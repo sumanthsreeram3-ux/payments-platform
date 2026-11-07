@@ -80,4 +80,17 @@ public class WebhookSinkController {
         EndpointCreated created = webhooks.createEndpoint(url, List.of());   // empty list = all events
         return Map.of("id", created.id(), "url", url, "alreadyRegistered", false);
     }
+
+        
+    @PostMapping("/retry-now")
+    public Map<String, Integer> retryNow() {
+        int n = jdbc.update("""
+                UPDATE webhook_deliveries
+                SET status = 'PENDING',
+                    attempts = CASE WHEN status = 'FAILED' THEN 0 ELSE attempts END,
+                    next_attempt_at = now()
+                WHERE status IN ('PENDING', 'FAILED')
+                """);
+        return Map.of("rescheduled", n);
+    }
 }

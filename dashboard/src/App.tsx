@@ -146,6 +146,12 @@ export default function App() {
       return sinkFailing ? 'Receiver is healthy again' : 'Receiver outage simulated: deliveries will fail and retry'
     })
 
+      const retryNow = () =>
+    run(async () => {
+      const r = await post<{ rescheduled: number }>('/dev/webhook-sink/retry-now')
+      return `Rescheduled ${r.data.rescheduled} webhook deliver${r.data.rescheduled === 1 ? 'y' : 'ies'} for an immediate retry`
+    })
+
   return (
     <div className="page">
       <header>
@@ -213,6 +219,7 @@ export default function App() {
           <button disabled={busy} className={sinkFailing ? 'danger' : ''} onClick={toggleOutage}>
             {sinkFailing ? 'End receiver outage' : 'Simulate receiver outage'}
           </button>
+          <button disabled={busy} onClick={retryNow}>Retry webhooks now</button>
         </div>
         {notice && <div className={`notice ${notice.kind}`}>{notice.text}</div>}
       </section>
